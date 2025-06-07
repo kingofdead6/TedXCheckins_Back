@@ -29,6 +29,15 @@ const UserSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user'
   },
+  team: {
+    type: String,
+    required: [true, 'Team is required']
+  },
+  roleInTeam: {
+    type: String,
+    required: [true, 'Role in team is required'],
+    trim: true
+  },
   createdAt: {
     type: Date,
     default: Date.now

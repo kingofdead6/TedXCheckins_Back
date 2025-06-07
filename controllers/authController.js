@@ -12,12 +12,12 @@ const generateToken = (user) => {
 };
 
 export const register = async (req, res) => {
-  const { name, email, phone, password, role } = req.body;
-  
+  const { name, email, phone, password, role, team, roleInTeam } = req.body;
+
   try {
     // Validate input
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Name, email and password are required' });
+    if (!name || !email || !password || !team || !roleInTeam) {
+      return res.status(400).json({ message: 'Name, email, password, team, and role in team are required' });
     }
 
     // Check if user exists
@@ -28,14 +28,16 @@ export const register = async (req, res) => {
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     // Create new user
     const user = new User({
       name,
       email,
       phone: phone || '',
       password: hashedPassword,
-      role: ['user', 'admin'].includes(role) ? role : 'user'
+      role: ['user', 'admin'].includes(role) ? role : 'user',
+      team,
+      roleInTeam
     });
 
     await user.save();
@@ -49,7 +51,9 @@ export const register = async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
-        role: user.role
+        role: user.role,
+        team: user.team,
+        roleInTeam: user.roleInTeam
       }
     });
   } catch (err) {
@@ -88,7 +92,9 @@ export const login = async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
-        role: user.role
+        role: user.role,
+        team: user.team,
+        roleInTeam: user.roleInTeam
       }
     });
   } catch (err) {
@@ -99,50 +105,17 @@ export const login = async (req, res) => {
 
 export const getProfile = async (req, res) => {
   try {
-    // The user is already attached to the request by the auth middleware
     res.json({
       id: req.user._id,
       name: req.user.name,
       email: req.user.email,
       phone: req.user.phone,
-      role: req.user.role
+      role: req.user.role,
+      team: req.user.team,
+      roleInTeam: req.user.roleInTeam
     });
   } catch (err) {
     console.error('Get profile error:', err);
     res.status(500).json({ message: 'Server error while fetching profile' });
-  }
-};
-
-export const updateProfile = async (req, res) => {
-  const { name, phone } = req.body;
-
-  try {
-    // Validate input
-    if (!name) {
-      return res.status(400).json({ message: 'Name is required' });
-    }
-
-    // Update user
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user._id,
-      { name, phone },
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedUser) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Return updated profile
-    res.json({
-      id: updatedUser._id,
-      name: updatedUser.name,
-      email: updatedUser.email,
-      phone: updatedUser.phone,
-      role: updatedUser.role
-    });
-  } catch (err) {
-    console.error('Update profile error:', err);
-    res.status(500).json({ message: 'Server error while updating profile' });
   }
 };
