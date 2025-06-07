@@ -33,14 +33,6 @@ const UserSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   }
-}, {
-  versionKey: false, // Disable the version key (__v)
-  toJSON: {
-    transform: function(doc, ret) {
-      delete ret.password; // Remove password field when converting to JSON
-      return ret;
-    }
-  }
 });
 
 export default mongoose.model('User', UserSchema);
